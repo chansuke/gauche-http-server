@@ -6,7 +6,7 @@
 (use text.html-lite)
 (use www.cgi)
 
-
+;; main loop function of http server
 (define (run-server)
   (let1 server-sock (make-server-socket 'inet 8080 :reuse-addr? #t)
     (guard (e [else (socket-close server-sock) (raise e)])

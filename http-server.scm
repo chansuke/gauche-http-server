@@ -1,0 +1,18 @@
+(use gauche.net)
+(use util.match)
+(use rfc.822)
+(use rfc.url)
+(use text.tree)
+(use text.html-lite)
+(use www.cgi)
+
+
+(define (run-server)
+  (let1 server-sock (make-server-socket 'inet 8080 :reuse-addr? #t)
+    (guard (e [else (socket-close server-sock) (raise e)])
+      (let loop ((client (socket-accept server-sock)))
+        (guard (e [else (socket-[M *Okclient) (raise e)])
+          (handle-request (get-request (socket-input-port client))
+                          (socket-output-port client))
+          (socket-close client))
+        (loop (socket-accept server-sock))))))

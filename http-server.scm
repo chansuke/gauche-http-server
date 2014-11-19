@@ -25,3 +25,17 @@
      (list* meth abs-path (rfc822-read-headers iport))]
     [#/^[A-Z]+/ () 'not-implemented]
     [else 'bad-request]))
+;;; create http-response
+(define (handle-request request oport)
+  (match request
+    ['bad-request     (display "HTTP/1.1 400 Bad Request\r\n\r\n" oport)]
+    ['not-implemented (display "HTTP/1.1 501 Not Implemented\r\n\r\n" oport)]
+    [(meth abs-path . headers)
+     (recieve (auth path q frag) (uri-decompose-hierarchical abs-path)
+              (letl content
+                    (render-content path (cgi-parse-parameters :query-string (or q "")))
+                (display "HTTP/1.1 200 OK\r\n" oport)
+                (display "Content-Type: text/html; charset=utf-8\r\n" oport)
+                (display #`"Content-Length: ,(string-size content)\r\n" oport)
+                (display "\r\n" oport)
+                (when (equal? meth "GET") (display content oport))))])

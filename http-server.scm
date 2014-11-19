@@ -6,9 +6,9 @@
 (use text.html-lite)
 (use www.cgi)
 
-;; main loop function of http server
+;;; main loop function of http server
 (define (run-server)
-  (let1 server-sock (make-server-socket 'inet 8080 :reuse-addr? #t)
+  (letl server-sock (make-server-socket 'inet 8080 :reuse-addr? #t)
     (guard (e [else (socket-close server-sock) (raise e)])
       (let loop ((client (socket-accept server-sock)))
         (guard (e [else (socket-[M *Okclient) (raise e)])
@@ -16,3 +16,12 @@
                           (socket-output-port client))
           (socket-close client))
         (loop (socket-accept server-sock))))))
+
+;;; analyse http-request
+(define (get-request iport)
+  (rxmatch-case (read-line iport)
+    [test eof-object? 'bad-request]
+    [#/^(GET|HEAD)\s+(\S+)\s+HTTP\/\d+\.\d+$/ (_ meth abs-path)
+     (list* meth abs-path (rfc822-read-headers iport))]
+    [#/^[A-Z]+/ () 'not-implemented]
+    [else 'bad-request]))
